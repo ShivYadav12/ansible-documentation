@@ -1,22 +1,28 @@
----
-name: Scheduled build for devel docs
+# GitHub Actions workflow: Scheduled build and deployment for development docs
+
 "on":
   schedule:
-    # Run at 05:22 daily
+    # Schedule the workflow to run **daily at 05:22 UTC**
     - cron: '22 5 * * *'
 
 jobs:
   build-package-docs:
     name: 📝 Build
+    # This job **reuses** a predefined workflow to build the documentation package
     uses: ./.github/workflows/reusable-build-docs.yaml
     secrets:
+      # Secret token used by the bot to authenticate actions like cloning or pushing
       DOCS_BOT_TOKEN: ${{ secrets.DOCS_BOT_TOKEN }}
 
   deploy-package-docs:
     name: 🚀 Deploy
+    # This job will run **only after** the build job completes successfully
     needs: build-package-docs
+    # This job **reuses** a predefined deployment workflow
     uses: ./.github/workflows/reusable-deploy-docs.yaml
     with:
+      # Pass the target deployment environment
       deployment-environment: 'production'
     secrets:
+      # Secret used specifically for deploying the built documentation
       DEPLOY_DOC_BUILD: ${{ secrets.DEPLOY_DOC_BUILD }}
